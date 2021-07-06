@@ -19,7 +19,14 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     }
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        // ...
+        if (descSource.type() != CV_32F)
+        {
+            descSource.convertTo (descSource, CV_32F);
+            descRef.convertTo (descRef, CV_32F);
+        }
+
+        matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+
     }
 
     // perform matching task
@@ -31,7 +38,21 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)
 
-        // ...
+        vector<vector<cv::DMatch>> knn_matches;
+        double t = (double)cv::getTickCount();
+        matcher->knnMatch(descSource, descRef, knn_matches, 2); 
+
+        t = ((double)cv::getTickCount()-t)/cv::getTickFrequency();
+        cout << "(KNN) with n = " << knn_matches.size() << "matches in " << 1000*t/1.0 << "ms" << endl;
+        
+        double minDescDistRatio = 0.8;
+        for (auto it = knn_matches.begin(); it != knn_matches.end(); ++it)
+        {
+            if ((*it)[0].distance < minDescDistRatio*(*it)[1].distance)
+            {
+                matches.push_back((*it)[0]);
+            }
+        }
     }
 }
 
@@ -49,11 +70,33 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
 
         extractor = cv::BRISK::create(threshold, octaves, patternScale);
     }
-    else
+    else if (descriptorType.compare("AKAZE") == 0)
     {
-
-        //...
+        extractor = cv::AKAZE::create();
     }
+    else if (descriptorType.compare("BRIEF") == 0 )
+    {
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
+    }
+    else if (descriptorType.compare("ORB") == 0 )
+    {
+        extractor = cv::ORB::create	();		
+    }
+    
+    /*
+    else if (descriptorType.compare("BRIEF) == 0)
+    {
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
+    }
+    else if (descriptorType.compare("ORB") == 0)
+    {
+        extractor = cv::ORB::create();
+    }
+    else if (descriptorType.compare("FREAK") == 0)
+    {
+        extractor = cv::xfeatures3d::FREAK::create();
+    }
+    */
 
     // perform feature description
     double t = (double)cv::getTickCount();
@@ -98,6 +141,87 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         string windowName = "Shi-Tomasi Corner Detector Results";
         cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
+
+void detKeypointsModern(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, std::string detectorType, bool bVis)
+{
+    
+    cv::Mat visImage;
+    double t;
+    cv::Ptr<cv::FeatureDetector> detector;
+    //cout << detectorType << "\n";
+
+    // STRING-BASED SELECTION
+    if (detectorType.compare("AKAZE") == 0)
+    {
+
+        //AKAZE PARAMETERS
+              /*
+              int descriptor_type = AKAZE::DESCRIPTOR_MLDB;
+              int descriptor_size = 0;
+              int descriptor_channels = 3,
+              float threshold = 0.001f;
+              int nOctaveLayers = 4;
+              int diffusivity = KAZE::DIFF_PM_G2;
+              */
+
+        detector = cv::AKAZE::create();
+        //cv::Ptr<cv::FeatureDetector> detector = cv::AKAZE::create( descriptor_type, descriptor_size, descriptor_channels,
+        //                                                           threshold, nOctaveLayers, diffusivity );
+    }
+    else if (detectorType.compare("BRISK") == 0)
+    {
+        int threshold = 30;        // FAST/AGAST detection threshold score.
+        int octaves = 3;           // detection octaves (use 0 to do single scale)
+        float patternScale = 1.0f; // apply this scale to the pattern used for sampling the neighbourhood of a keypoint.
+
+        detector = cv::BRISK::create(threshold, octaves, patternScale);
+    }
+    else if (detectorType.compare("FAST") == 0)
+    {
+        int blockSize = 4;
+        double t;
+        int threshold = 30;
+        bool bNMS = true;
+
+        cv::FastFeatureDetector::DetectorType type = cv::FastFeatureDetector::TYPE_9_16;
+        detector = cv::FastFeatureDetector::create(threshold, bNMS, type);
+    }
+    //else if (descriptorType.compare("HARRIS") == 0)
+    //{
+    //
+    //}
+    else if (detectorType.compare("ORB") == 0)
+    {
+        detector = cv::ORB::create();
+    }
+    else if (detectorType.compare("SIFT") == 0)
+    {
+        // SIFT PARAMETERS
+        int nfeatures = 0;
+        int nOctaveLayers = 3;
+        double contrastThreshold = 0.04;
+        double edgeThreshold = 10;
+        double sigma = 1.6;
+
+        detector = cv::xfeatures2d::SIFT::create(nfeatures, nOctaveLayers, contrastThreshold, edgeThreshold, sigma);
+    }
+
+    t = (double)cv::getTickCount();
+    detector->detect(img, keypoints);
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+
+    cout << detectorType <<  " detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+
+    if (bVis)
+    {
+        visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        string windowName = "Detection Results";
+        cv::namedWindow(windowName, 2);
         imshow(windowName, visImage);
         cv::waitKey(0);
     }
