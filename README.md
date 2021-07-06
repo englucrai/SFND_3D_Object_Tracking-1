@@ -1,14 +1,16 @@
 # SFND 3D Object Tracking
 
-Welcome to the final project of the camera course. By completing all the lessons, you now have a solid understanding of keypoint detectors, descriptors, and methods to match them between successive images. Also, you know how to detect objects in an image using the YOLO deep-learning framework. And finally, you know how to associate regions in a camera image with Lidar points in 3D space. Let's take a look at our program schematic to see what we already have accomplished and what's still missing.
+To accomplish this project it is necessary solid understanding of keypoint detectors, descriptors, and methods to match them between successive images. Also, to know how to detect objects in an image using the YOLO deep-learning framework. And finally, to know how to associate regions in a camera image with Lidar points in 3D space.
 
 <img src="images/course_code_structure.png" width="779" height="414" />
 
-In this final project, you will implement the missing parts in the schematic. To do this, you will complete four major tasks: 
-1. First, you will develop a way to match 3D objects over time by using keypoint correspondences. 
-2. Second, you will compute the TTC based on Lidar measurements. 
-3. You will then proceed to do the same using the camera, which requires to first associate keypoint matches to regions of interest and then to compute the TTC based on those matches. 
-4. And lastly, you will conduct various tests with the framework. Your goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor. In the last course of this Nanodegree, you will learn about the Kalman filter, which is a great way to combine the two independent TTC measurements into an improved version which is much more reliable than a single sensor alone can be. But before we think about such things, let us focus on your final project in the camera course. 
+In this final project, you will implement the missing parts in the schematic. To do this, you will complete four major tasks:
+
+The four principal tasks to this project are:
+1. Develop a way to match 3D objects over time by using keypoint correspondences. 
+2. Compute the TTC (time to colision) based on Lidar measurements. 
+3. Associate keypoint matches to regions of interest and then to compute the TTC based on those matches. 
+4. Conduct various tests with the framework. The goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor.
 
 ## Dependencies for Running Locally
 * cmake >= 2.8
@@ -31,3 +33,28 @@ In this final project, you will implement the missing parts in the schematic. To
 2. Make a build directory in the top level project directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
 4. Run it: `./3D_object_tracking`.
+
+---
+
+## 1. Match 3D Objects
+
+To accomplish successful 3D object matching, the **"matchingBoundingBoxes"** method was implemented. It takes as input both previous and current data frames and provides as output the matched regions of interests' ids. To choose the best matches it was performed a search for the highest key points correspondences.
+
+---
+
+## 2. Compute Lidar based TTC
+
+Now we must compute the time to collision for all 3D objects based on Lidar measurements. It is important to filter the lidar data so the results may not be affected by outliers, preventing wrong estimates of time to colision.
+
+---
+
+## 3. Associate Keypoint Correspondences with Bounding Boxes
+
+Before calculating the time to collision, it is necessary to find all key point matches, checking if the corresponding key points are within the region of interest in the camera image. To avoid outliers among the matches, a mean value is calculated using the Euclidean distance between keypoint matches. Those that are far from the mean value are then excluded from the results.
+
+---
+
+## 4. Compute Camera-based TTC
+
+Once keypoint matches have been added to the bounding boxes, the next step is to compute the TTC estimate. The code is implemented in a way that it is able to deal with outlier correspondences in a statistically robust way to avoid severe estimation errors.
+
