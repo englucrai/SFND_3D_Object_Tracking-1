@@ -17,7 +17,7 @@ In this final project, the focus will be the final part showed above inside the 
 4. Conduct various tests with the framework. The goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor.
 
 <p align="center">
-  <img src="https://github.com/englucrai/SFND_3D_object_tracking/blob/master/images/ClusteringLimitingToFirstBBox.gif">
+  <img src="https://github.com/englucrai/SFND_3D_object_tracking/blob/master/images/LidarClustering.gif">
 </p>
 
 <p align="center">
