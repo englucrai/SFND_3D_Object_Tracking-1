@@ -16,6 +16,14 @@ In this final project, the focus will be the final part showed above inside the 
 
 4. Conduct various tests with the framework. The goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor.
 
+<p align="center">
+  <img src="https://github.com/englucrai/SFND_3D_object_tracking/blob/master/images/ClusteringLimitingToFirstBBox.gif">
+</p>
+
+<p align="center">
+  <img src="https://github.com/englucrai/SFND_3D_object_tracking/blob/master/images/ClusteringLimitingToFirstBBox.gif">
+</p>
+
 ## Dependencies for Running Locally
 * cmake >= 2.8
   * All OSes: [click here for installation instructions](https://cmake.org/install/)
